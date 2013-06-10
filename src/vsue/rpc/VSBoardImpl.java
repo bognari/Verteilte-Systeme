@@ -1,8 +1,8 @@
 package vsue.rpc;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * @author Stephan
@@ -12,18 +12,18 @@ public class VSBoardImpl implements VSBoard {
   /**
    * Liste für die Nachrichten
    */
-  private final ArrayList<VSBoardMessage>  messages;
+  private final LinkedList<VSBoardMessage>  messages;
   /**
    * Liste für die Abonenten
    */
-  private final ArrayList<VSBoardListener> listeners;
+  private final LinkedList<VSBoardListener> listeners;
 
   /**
    * @throws RemoteException
    */
   public VSBoardImpl() throws RemoteException {
-    this.messages = new ArrayList<VSBoardMessage>();
-    this.listeners = new ArrayList<VSBoardListener>();
+    this.messages = new LinkedList<VSBoardMessage>();
+    this.listeners = new LinkedList<VSBoardListener>();
   }
 
   /*
