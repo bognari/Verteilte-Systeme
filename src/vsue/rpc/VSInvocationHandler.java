@@ -37,7 +37,8 @@ public class VSInvocationHandler implements Serializable, InvocationHandler {
           if (args != null) { // leere Paramerer sind null -.-
             for (int i = 0; i < args.length; i++) {
               if (Remote.class.isAssignableFrom(args[i].getClass())) {
-                // testen ob Parameter Remote Objects sind. (nur erste
+                // testen ob Parameter Remote Objects sind. (nur
+                // erste
                 // Interation)
                 final Remote argProxy = VSRemoteObjectManager.getInstance().getProxy((Remote) args[i]);
                 if (argProxy != null) {
@@ -55,7 +56,8 @@ public class VSInvocationHandler implements Serializable, InvocationHandler {
             throw (Throwable) reply.getObj();
           }
           return reply.getObj();
-        } catch (final IOException ioe) { // verbindung tot also weiterleiten
+        } catch (final IOException ioe) { // verbindung tot also
+                                          // weiterleiten
           throw ioe;
         } finally {
           socket.close();
@@ -64,7 +66,8 @@ public class VSInvocationHandler implements Serializable, InvocationHandler {
         throw new RemoteException("ConnectionException");
       }
     } else { // kein fernaufruf
-      // alle aufrufe auf den Proxy erzeugen einen "Kreis", deswegen wird die
+      // alle aufrufe auf den Proxy erzeugen einen "Kreis", deswegen wird
+      // die
       // RemoteReference benutzt
       return method.invoke(this.remoteReference, args);
     }
