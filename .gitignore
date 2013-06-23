@@ -1,2 +1,13 @@
-/doc
-/VSUE
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# Folder #
+doc/**
+bin/**
+
+# trash #
+desktop.ini
