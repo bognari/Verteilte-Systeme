@@ -21,6 +21,6 @@ public class VSLURMap<K, V> extends LinkedHashMap<K, V> {
    * @see java.util.LinkedHashMap#removeEldestEntry(java.util.Map.Entry)
    */
   protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
-    return size() > this.maxSize;
+    return size() >= this.maxSize;
  }
 }
