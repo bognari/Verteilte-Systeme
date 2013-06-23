@@ -1,4 +1,4 @@
-package vsue.faults;
+package vsue.vsboard;
 
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
@@ -6,33 +6,26 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.ExportException;
 
+import vsue.faults.VSRPCsemantics;
+import vsue.rpc.VSRemoteObjectManager;
+
 /**
  * @author Stephan
  * 
  */
 public class VSBoardServer {
   /**
-	 * 
+	 * Name des VSBoard für die Veröffendlichung
 	 */
-  static final String          NAME  = "VSBoard";
-
-  private static final boolean debug = false;
+  protected static final String  NAME  = "VSBoard";
+  protected static final boolean debug = false;
 
   /**
    * @param args
    */
   public static void main(final String[] args) {
     VSRemoteObjectManager.setRPCSymmantic(VSRPCsemantics.AMO);
-    VSBoardServer server = null;
-
-    try {
-      server = new VSBoardServer();
-    } catch (final RemoteException re) {
-      System.err.println("Server could not be started.");
-      re.printStackTrace();
-      System.exit(0);
-    }
-
+    final VSBoardServer server = new VSBoardServer();
     try {
       server.start();
       System.out.println("server is running");
@@ -42,33 +35,32 @@ public class VSBoardServer {
     }
   }
 
+  protected final VSBoard vsBoad;
+
   /**
-   * @throws RemoteException
+   * Erstellt einen Server mit einem VSBoard
    */
-  public VSBoardServer() throws RemoteException {
+  public VSBoardServer() {
+    this.vsBoad = new VSBoardImpl();
   }
 
   /**
-   * startet den VSBoardServer, erstellt ein VSBoard und exportiert dieses
+   * Startet den VSBoardServer
    * 
    * @throws RemoteException
    * @throws AlreadyBoundException
    * @throws ExportException
    */
-  public void start() throws RemoteException, AlreadyBoundException, ExportException {
-    final VSBoard board = new VSBoardImpl();
-    if (VSBoardServer.debug) {
+  protected void start() throws RemoteException, AlreadyBoundException, ExportException {
+    if (VSBoardServer.debug)
       System.out.println("board created");
-    }
 
-    final VSBoard remBoard = (VSBoard) VSRemoteObjectManager.getInstance().exportObject(board);
-    if (VSBoardServer.debug) {
+    final VSBoard remBoard = (VSBoard) VSRemoteObjectManager.getInstance().exportObject(this.vsBoad);
+    if (VSBoardServer.debug)
       System.out.println("board exported");
-    }
 
     LocateRegistry.createRegistry(Registry.REGISTRY_PORT).rebind(VSBoardServer.NAME, remBoard);
-    if (VSBoardServer.debug) {
+    if (VSBoardServer.debug)
       System.out.println("board in registry");
-    }
   }
 }

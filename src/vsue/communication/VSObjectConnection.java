@@ -8,10 +8,21 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 
+/**
+ * Kann Objekte für TCP versenden
+ * 
+ * @author Stephan
+ *
+ */
 public class VSObjectConnection extends VSConnection {
 
   private static final boolean debug = false;
 
+  /**
+   * Erstellt eine neue Verbindung
+   * 
+   * @param socket
+   */
   public VSObjectConnection(final Socket socket) {
     super(socket);
   }
@@ -36,12 +47,10 @@ public class VSObjectConnection extends VSConnection {
     } catch (final IOException ioe) {
       throw ioe;
     } finally {
-      if (ois != null) {
+      if (ois != null)
         ois.close();
-      }
-      if (bais != null) {
+      if (bais != null)
         bais.close();
-      }
     }
   }
 
@@ -54,9 +63,8 @@ public class VSObjectConnection extends VSConnection {
    */
   public Serializable receiveObject() throws IOException, ClassNotFoundException {
     final byte[] data = this.receiveChunk();
-    if (VSObjectConnection.debug) {
+    if (VSObjectConnection.debug)
       System.out.println(this.deserialize(data));
-    }
     return this.deserialize(data);
   }
 
@@ -67,9 +75,8 @@ public class VSObjectConnection extends VSConnection {
    * @throws IOException
    */
   public void sendObject(final Serializable object) throws IOException {
-    if (VSObjectConnection.debug) {
+    if (VSObjectConnection.debug)
       System.out.println(object);
-    }
     final byte[] data = this.serialize(object);
     this.sendChunk(data);
   }
@@ -95,12 +102,10 @@ public class VSObjectConnection extends VSConnection {
     } catch (final IOException ioe) {
       throw ioe;
     } finally {
-      if (baos != null) {
+      if (baos != null)
         baos.close();
-      }
-      if (oos != null) {
+      if (oos != null)
         oos.close();
-      }
     }
   }
 }

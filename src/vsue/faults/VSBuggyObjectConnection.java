@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import vsue.communication.VSObjectConnection;
+
 public class VSBuggyObjectConnection extends VSObjectConnection {
 
   private static final boolean     ENABLE_DEBUG_OUTPUT   = true;
@@ -30,24 +32,21 @@ public class VSBuggyObjectConnection extends VSObjectConnection {
 
     while (this.incomingObjects.isEmpty()) {
       final Serializable object = super.receiveObject();
-      if (object == null) {
+      if (object == null)
         return null;
-      }
 
       // Drop object?
       if (random.nextInt(100) < DROP_PROBABILITY) {
-        if (ENABLE_DEBUG_OUTPUT) {
+        if (ENABLE_DEBUG_OUTPUT)
           System.err.println("DROP: " + object);
-        }
         continue;
       }
       this.incomingObjects.add(object);
 
       // Duplicate object?
       if (random.nextInt(100) < DUPLICATE_PROBABILITY) {
-        if (ENABLE_DEBUG_OUTPUT) {
+        if (ENABLE_DEBUG_OUTPUT)
           System.err.println("DUPLICATE: " + object);
-        }
         this.incomingObjects.add(object);
       }
     }
@@ -55,9 +54,8 @@ public class VSBuggyObjectConnection extends VSObjectConnection {
     // Delay object?
     if (random.nextInt(100) < DELAY_PROBABILITY) {
       final int delay = random.nextInt(MAX_DELAY);
-      if (ENABLE_DEBUG_OUTPUT) {
+      if (ENABLE_DEBUG_OUTPUT)
         System.err.println("DELAY: " + this.incomingObjects.get(0));
-      }
       try {
         Thread.sleep(delay);
       } catch (final InterruptedException e) {

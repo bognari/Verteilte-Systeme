@@ -7,33 +7,20 @@ import java.rmi.registry.Registry;
 import java.rmi.server.ExportException;
 import java.rmi.server.UnicastRemoteObject;
 
+import vsue.vsboard.VSBoard;
+import vsue.vsboard.VSBoardServer;
+
 /**
  * @author Stephan
  * 
  */
-public class VSBoardRMIServer {
-  /**
-	 * 
-	 */
-  static final int    TCP_PORT = 50000;
-  /**
-	 * 
-	 */
-  static final String NAME     = "VSBoard";
+public class VSBoardRMIServer extends VSBoardServer {
 
   /**
    * @param args
    */
   public static void main(final String[] args) {
-    VSBoardRMIServer server = null;
-
-    try {
-      server = new VSBoardRMIServer();
-    } catch (final RemoteException re) {
-      System.err.println("Server konnte nicht gestartet werden.");
-      re.printStackTrace();
-      System.exit(0);
-    }
+    final VSBoardRMIServer server = new VSBoardRMIServer();
 
     try {
       server.start();
@@ -44,31 +31,23 @@ public class VSBoardRMIServer {
     }
   }
 
-  /**
-	 * 
-	 */
-  private Registry registry;
-
-  /**
-   * @throws RemoteException
+  /*
+   * (non-Javadoc)
+   * 
+   * @see vsue.vsboard.VSBoardServer#start()
    */
-  public VSBoardRMIServer() throws RemoteException {
-  }
+  @Override
+  protected void start() throws RemoteException, AlreadyBoundException, ExportException {
+    if (VSBoardServer.debug)
+      System.out.println("board created");
 
-  /**
-   * @throws RemoteException
-   * @throws AlreadyBoundException
-   * @throws ExportException
-   */
-  public void start() throws RemoteException, AlreadyBoundException, ExportException {
-    final VSBoard board = new VSBoardImpl();
+    final VSBoard remBoard = (VSBoard) UnicastRemoteObject.exportObject(this.vsBoad);
 
-    // System.out.printf("Bin ich blöd? ... %b\n"
-    // ,UnicastRemoteObject.unexportObject(board, true));
+    if (VSBoardServer.debug)
+      System.out.println("board exported");
 
-    final VSBoard remBoard = (VSBoard) UnicastRemoteObject.exportObject(board, VSBoardRMIServer.TCP_PORT);
-
-    this.registry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-    this.registry.rebind(VSBoardRMIServer.NAME, remBoard);
+    LocateRegistry.createRegistry(Registry.REGISTRY_PORT).rebind(VSBoardServer.NAME, remBoard);
+    if (VSBoardServer.debug)
+      System.out.println("board in registry");
   }
 }

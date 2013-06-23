@@ -1,4 +1,4 @@
-package vsue.faults;
+package vsue.vsboard;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -9,6 +9,8 @@ import java.rmi.RemoteException;
  */
 public interface VSBoardListener extends Remote {
   /**
+   * Methode zum Anzeigen von neuen Nachrichten
+   * 
    * @param message
    * @throws RemoteException
    */

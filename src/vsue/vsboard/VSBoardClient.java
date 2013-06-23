@@ -1,4 +1,4 @@
-package vsue.faults;
+package vsue.vsboard;
 
 import java.io.Serializable;
 import java.rmi.NotBoundException;
@@ -9,33 +9,27 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import vsue.faults.VSRPCsemantics;
+import vsue.rpc.VSRemoteObjectManager;
+
 /**
  * @author Stephan
  * 
  */
 public class VSBoardClient implements VSBoardListener, Serializable {
-  private static final long    serialVersionUID = 6910929956023678719L;
 
-  /**
-	 * 
-	 */
-  private VSBoard              vsBord;
+  private static final long      serialVersionUID = 899243661902242507L;
 
-  /**
-	 * 
-	 */
-  static final private boolean debug            = false;
+  protected static final boolean debug            = false;
 
-  static final private String  NAME             = "VSBoard";
+  protected static final Pattern pExit            = Pattern.compile("^exit$");
+  // static final Pattern pHelp = Pattern.compile("^help|?$");
+  protected static final Pattern pPost            = Pattern.compile("^post\\s+(\\d+)\\s+\"(.*?)\"\\s+\"(.*?)\"$");
+  protected static final Pattern pGet             = Pattern.compile("^get\\s+(\\-?\\d+)$");
+  protected static final Pattern pConnect         = Pattern.compile("^connect\\s+\"([a-zA-Z0-9.]+)\"\\s+(\\d+)$");
+  protected static final Pattern pListen          = Pattern.compile("^listen$");
 
-  private boolean              listen           = false;
-
-  static private Pattern       pExit            = Pattern.compile("^exit$");
-  // static private Pattern pHelp = Pattern.compile("^help|?$");
-  static private Pattern       pPost            = Pattern.compile("^post\\s+(\\d+)\\s+\"(.*?)\"\\s+\"(.*?)\"$");
-  static private Pattern       pGet             = Pattern.compile("^get\\s+(\\-?\\d+)$");
-  static private Pattern       pConnect         = Pattern.compile("^connect\\s+\"([a-zA-Z0-9.]+)\"\\s+(\\d+)$");
-  static private Pattern       pListen          = Pattern.compile("^listen$");
+  protected static final String  NAME             = "VSBoard";
 
   /**
    * startet den Clienten
@@ -49,12 +43,16 @@ public class VSBoardClient implements VSBoardListener, Serializable {
     app.run();
   }
 
+  protected VSBoard vsBord;
+
+  protected boolean listen;
+
   /**
    * verbindet den Clienten mit dem Server
    * 
    * @param input
    */
-  private void connect(final String input) {
+  protected void connect(final String input) {
     final Matcher m = VSBoardClient.pConnect.matcher(input);
     m.matches();
 
@@ -66,14 +64,12 @@ public class VSBoardClient implements VSBoardListener, Serializable {
       System.out.println("mit dem Server verbunden");
     } catch (final RemoteException re) {
       System.err.println("Konnte zum Server nicht verbinden.");
-      if (VSBoardClient.debug) {
+      if (VSBoardClient.debug)
         re.printStackTrace();
-      }
     } catch (final NotBoundException nbe) {
       System.err.println("Dienst existiert nicht auf dem Server");
-      if (VSBoardClient.debug) {
+      if (VSBoardClient.debug)
         nbe.printStackTrace();
-      }
     }
   }
 
@@ -82,11 +78,10 @@ public class VSBoardClient implements VSBoardListener, Serializable {
    * 
    * @param scanner
    */
-  private void exit(final Scanner scanner) {
+  protected void exit(final Scanner scanner) {
     scanner.close();
-    if (this.listen) {
+    if (this.listen)
       VSRemoteObjectManager.getInstance().unexport(this);
-    }
     System.exit(0);
   }
 
@@ -95,7 +90,7 @@ public class VSBoardClient implements VSBoardListener, Serializable {
    * 
    * @param input
    */
-  private void get(final String input) {
+  protected void get(final String input) {
     if ((this.vsBord == null) && !VSBoardClient.debug) {
       System.err.println("nicht verbunden");
       return;
@@ -106,26 +101,23 @@ public class VSBoardClient implements VSBoardListener, Serializable {
 
     try {
       final VSBoardMessage[] messages = this.vsBord.get(Integer.parseInt(m.group(1)));
-      for (final VSBoardMessage message : messages) {
+      for (final VSBoardMessage message : messages)
         this.printMessage(message);
-      }
     } catch (final RemoteException re) {
       System.err.println("Server Fehler");
-      if (VSBoardClient.debug) {
+      if (VSBoardClient.debug)
         re.printStackTrace();
-      }
     } catch (final IllegalArgumentException iae) {
       System.err.println("Index muss eine Zahl größer gleich 0 sein");
-      if (VSBoardClient.debug) {
+      if (VSBoardClient.debug)
         iae.printStackTrace();
-      }
     }
   }
 
   /**
 	 * 
 	 */
-  private void help() {
+  protected void help() {
     System.out
         .println("Die Befehle sind: help, ?, exit, post uid \"title\" \"message\", get i, connect \"server\" port, listen");
   }
@@ -133,7 +125,7 @@ public class VSBoardClient implements VSBoardListener, Serializable {
   /**
    * trägt sich als Listener beim Server ein
    */
-  private void listen() {
+  protected void listen() {
     if (!this.listen) {
       if ((this.vsBord == null) && !VSBoardClient.debug) {
         System.err.println("nicht verbunden");
@@ -146,13 +138,11 @@ public class VSBoardClient implements VSBoardListener, Serializable {
         System.out.println("am Server registiert");
       } catch (final RemoteException re) {
         System.err.println("Server Fehler");
-        if (VSBoardClient.debug) {
+        if (VSBoardClient.debug)
           re.printStackTrace();
-        }
       }
-    } else {
+    } else
       System.out.println("schon als Listener registiert");
-    }
   }
 
   @Override
@@ -166,7 +156,7 @@ public class VSBoardClient implements VSBoardListener, Serializable {
    * 
    * @param input
    */
-  private void post(final String input) {
+  protected void post(final String input) {
     if ((this.vsBord == null) && !VSBoardClient.debug) {
       System.err.println("nicht verbunden");
       return;
@@ -180,9 +170,8 @@ public class VSBoardClient implements VSBoardListener, Serializable {
       this.vsBord.post(vsMessage);
     } catch (final RemoteException re) {
       System.err.println("Server Fehler");
-      if (VSBoardClient.debug) {
+      if (VSBoardClient.debug)
         re.printStackTrace();
-      }
     }
   }
 
@@ -191,30 +180,29 @@ public class VSBoardClient implements VSBoardListener, Serializable {
    * 
    * @param message
    */
-  private void printMessage(final VSBoardMessage message) {
+  protected void printMessage(final VSBoardMessage message) {
     System.out.printf("-------\n%s\n-------\n", message.toString());
   }
 
   /**
    * nimmt die Befehle entgegen
    */
-  public void run() {
+  protected void run() {
     final Scanner scanner = new Scanner(System.in);
     while (true) {
       final String input = scanner.nextLine();
-      if (VSBoardClient.pExit.matcher(input).matches()) {
+      if (VSBoardClient.pExit.matcher(input).matches())
         this.exit(scanner);
-      } else if (VSBoardClient.pGet.matcher(input).matches()) {
+      else if (VSBoardClient.pGet.matcher(input).matches())
         this.get(input);
-      } else if (VSBoardClient.pConnect.matcher(input).matches()) {
+      else if (VSBoardClient.pConnect.matcher(input).matches())
         this.connect(input);
-      } else if (VSBoardClient.pPost.matcher(input).matches()) {
+      else if (VSBoardClient.pPost.matcher(input).matches())
         this.post(input);
-      } else if (VSBoardClient.pListen.matcher(input).matches()) {
+      else if (VSBoardClient.pListen.matcher(input).matches())
         this.listen();
-      } else {
+      else
         this.help();
-      }
     }
   }
 }

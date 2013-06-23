@@ -5,20 +5,35 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.rmi.Remote;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import vsue.faults.VSRPCsemantics;
 
 public class VSRemoteObjectManager {
+  /**
+   * Port des Servers
+   */
   private final int                    port;
-
+  /**
+   * Die Manager Instance
+   */
   private static VSRemoteObjectManager instance;
+  /**
+   * Die Verwendete RPC Sematik
+   */
+  private static VSRPCsemantics        symmantic = VSRPCsemantics.MAYBE;
 
+  /**
+   * gibt die Manager Instance zurück
+   * @return
+   */
   public static synchronized VSRemoteObjectManager getInstance() {
-    if (VSRemoteObjectManager.instance == null) {
+    if (VSRemoteObjectManager.instance == null)
       // wenn es noch keinen manager gibt, dann erzeuge einen
       try {
         VSRemoteObjectManager.instance = new VSRemoteObjectManager();
@@ -26,22 +41,43 @@ public class VSRemoteObjectManager {
         System.err.println("kann Socket nicht erstellen");
         ioe.printStackTrace();
       }
-    }
     return VSRemoteObjectManager.instance;
   }
 
+  /**
+   * @return
+   */
+  public static VSRPCsemantics getRPCSymmantic() {
+    return symmantic;
+  }
+
+  /**
+   * @param symmantic
+   */
+  public static void setRPCSymmantic(final VSRPCsemantics symmantic) { 
+    VSRemoteObjectManager.symmantic = symmantic;
+  }
+
+  /**
+   * Datenbank für die Objekte
+   */
   private final Hashtable<Integer, Remote> objects = new Hashtable<>();
+  /**
+   * Datenbank für die Proxies
+   */
   private final Hashtable<Remote, Remote>  proxies = new Hashtable<>();
 
-  private final ServerSocket               socket;
+  /**
+   * der Serversocket
+   */
+  private final VSServer                   server;
 
-  private Integer                          ids     = new Integer(0);
+  private AtomicInteger                    ids     = new AtomicInteger(0);
 
   private VSRemoteObjectManager() throws IOException {
-    this.socket = new ServerSocket(0);
-    this.port = this.socket.getLocalPort();
-    final VSServer worker = new VSServer(this);
-    final Thread thread = new Thread(worker);
+    this.server = VSServer.getInstance();
+    this.port   = this.server.getPort();
+    final Thread thread = new Thread(server);
     thread.start();
   }
 
@@ -53,19 +89,13 @@ public class VSRemoteObjectManager {
    */
   public Remote exportObject(final Remote object) {
     Remote proxy = this.proxies.get(object);
-    if (proxy != null) {
+    if (proxy != null)
       // test ob schon exportiert
       return proxy;
-    }
 
-    int id = 0;
-    // id generieren
-    synchronized (this.ids) {
-      id = this.ids;
-      this.ids++;
-      this.objects.put(id, object); // obj vorhalten im Speicher
-    }
-
+    int id = ids.getAndIncrement();
+    this.objects.put(id, object); // obj vorhalten im Speicher
+    
     try {
       VSRemoteReference reference;
       reference = new VSRemoteReference(InetAddress.getLocalHost().getHostName(), this.port, id);
@@ -75,13 +105,12 @@ public class VSRemoteObjectManager {
       // von Remote abgeleitetes Interface suchen
       final Class<?>[] interfaces = object.getClass().getInterfaces();
       // interfaceCheck: for (final Class<?> interf : interfaces) {
-      for (final Class<?> interf : interfaces) {
+      for (final Class<?> interf : interfaces)
         if (Remote.class.isAssignableFrom(interf)) {
           realInterface = interf;
           realInterfaces.add(interf);
           // break interfaceCheck;
         }
-      }
 
       final ClassLoader remoteLoader = realInterface.getClassLoader();
       final Class<?>[] remoteInterfaces = new Class<?>[realInterfaces.size()];
@@ -108,25 +137,26 @@ public class VSRemoteObjectManager {
   private int getKeyFormObject(final Remote obj) {
     synchronized (this.objects) {
       final Set<Integer> keys = this.objects.keySet();
-      for (final int i : keys) {
-        if (this.objects.get(i).equals(obj)) {
+      for (final int i : keys)
+        if (this.objects.get(i).equals(obj))
           return i;
-        }
-      }
       return -1;
     }
   }
 
+  /**
+   * @return
+   */
   public Hashtable<Integer, Remote> getObjects() {
     return this.objects;
   }
 
+  /**
+   * @param obj
+   * @return
+   */
   public Remote getProxy(final Remote obj) {
     return this.proxies.get(obj);
-  }
-
-  public ServerSocket getSocket() {
-    return this.socket;
   }
 
   /**
@@ -145,36 +175,30 @@ public class VSRemoteObjectManager {
 
     final Object obj = this.objects.get(objectID);
 
-    if (obj == null) { // teste ob Obj existiert
+    if (obj == null)
       throw new IllegalArgumentException("Object nicht vorhanden");
-    }
 
     Class<?> realInterface = null;
     // das Interface holen, das von Remote ableitet
     final Class<?>[] interfaces = obj.getClass().getInterfaces();
-    interfaceCheck: for (final Class<?> interf : interfaces) {
+    interfaceCheck: for (final Class<?> interf : interfaces)
       if (Remote.class.isAssignableFrom(interf)) {
         realInterface = interf;
         break interfaceCheck;
       }
-    }
 
     // die Methode suchen im von Remote abgeleiteten Interface
-    for (final Method m : realInterface.getMethods()) {
-      if (m.toGenericString().equals(genericMethodName)) {
+    for (final Method m : realInterface.getMethods())
+      if (m.toGenericString().equals(genericMethodName))
         try {
           final Object ret = m.invoke(obj, args);
-          if ((ret != null) && Remote.class.isAssignableFrom(ret.getClass())) {
-            if (this.proxies.get(ret) != null) {
+          if ((ret != null) && Remote.class.isAssignableFrom(ret.getClass()))
+            if (this.proxies.get(ret) != null)
               return this.getProxy((Remote) ret);
-            }
-          }
           return ret;
         } catch (final InvocationTargetException ite) {
           return ite.getTargetException();
         }
-      }
-    }
     return null;
   }
 

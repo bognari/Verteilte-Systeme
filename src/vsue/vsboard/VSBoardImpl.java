@@ -1,4 +1,4 @@
-package vsue.faults;
+package vsue.vsboard;
 
 import java.rmi.RemoteException;
 import java.util.HashSet;
@@ -19,10 +19,7 @@ public class VSBoardImpl implements VSBoard {
    */
   private final Set<VSBoardListener> listeners;
 
-  /**
-   * @throws RemoteException
-   */
-  public VSBoardImpl() throws RemoteException {
+  public VSBoardImpl() {
     this.messages = new LinkedHashSet<VSBoardMessage>();
     this.listeners = new HashSet<VSBoardListener>();
   }
@@ -34,28 +31,24 @@ public class VSBoardImpl implements VSBoard {
    */
   @Override
   public VSBoardMessage[] get(int n) throws IllegalArgumentException, RemoteException {
-    if (n < 0) {
+    if (n < 0)
       throw new IllegalArgumentException("der Index von get()  muss größergleich als 0 sein");
-    }
-    if (this.messages.isEmpty()) {
+    if (this.messages.isEmpty())
       return new VSBoardMessage[0];
-    }
 
     int size = 0;
     VSBoardMessage[] allMessages = null;
     synchronized (this.messages) {
       size = this.messages.size();
-      if (n > size) {
+      if (n > size)
         n = size;
-      }
       allMessages = this.messages.toArray(new VSBoardMessage[size]);
     }
 
     final VSBoardMessage[] ret = new VSBoardMessage[n];
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
       ret[i] = allMessages[size - 1 - i];
-    }
 
     return ret;
   }
@@ -67,9 +60,8 @@ public class VSBoardImpl implements VSBoard {
    */
   @Override
   public void listen(final VSBoardListener listener) throws RemoteException {
-    if (listener == null) {
+    if (listener == null)
       throw new IllegalArgumentException("kein null bei Listener erlaubt");
-    }
     synchronized (this.listeners) {
       this.listeners.add(listener);
     }

@@ -1,4 +1,4 @@
-package vsue.faults;
+package vsue.vsboard;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -9,20 +9,26 @@ import java.rmi.RemoteException;
  */
 public interface VSBoard extends Remote {
   /**
+   * Gibt die neutes n Nachrichten zurück
+   * 
    * @param n
    * @return
-   * @throws IllegalArgumentException
+   * @throws IllegalArgumentException n < 0
    * @throws RemoteException
    */
   public VSBoardMessage[] get(int n) throws IllegalArgumentException, RemoteException;
 
   /**
+   * Registriert sich als Listener am Board
+   * 
    * @param listener
    * @throws RemoteException
    */
   public void listen(VSBoardListener listener) throws RemoteException;
 
   /**
+   * Sendet eine Nachricht an das Board und verteilt diese an alle Listener
+   * 
    * @param message
    * @throws RemoteException
    */
