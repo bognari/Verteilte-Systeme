@@ -7,8 +7,10 @@ import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.Remote;
-import java.util.Hashtable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -61,11 +63,11 @@ public class VSRemoteObjectManager {
   /**
    * Datenbank für die Objekte
    */
-  private final Hashtable<Integer, Remote> objects = new Hashtable<>();
+  private final Map<Integer, Remote> objects = Collections.synchronizedMap(new HashMap<Integer, Remote>());
   /**
    * Datenbank für die Proxies
    */
-  private final Hashtable<Remote, Remote>  proxies = new Hashtable<>();
+  private final Map<Remote, Remote>  proxies = Collections.synchronizedMap(new HashMap<Remote, Remote>());
 
   /**
    * der Serversocket
@@ -147,7 +149,7 @@ public class VSRemoteObjectManager {
   /**
    * @return
    */
-  public Hashtable<Integer, Remote> getObjects() {
+  public Map<Integer, Remote> getObjects() {
     return this.objects;
   }
 

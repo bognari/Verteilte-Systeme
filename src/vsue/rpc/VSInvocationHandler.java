@@ -168,7 +168,7 @@ public class VSInvocationHandler implements Serializable, InvocationHandler {
           request.age();
           tryCounter++;
           if (tryCounter < 10)
-            timeout = VSInvocationHandler.TIMEOUT * tryCounter;
+            timeout += VSInvocationHandler.TIMEOUT * tryCounter;
           continue newTry;
         } catch (final ExecutionException ee) {
           if (DEBUG)

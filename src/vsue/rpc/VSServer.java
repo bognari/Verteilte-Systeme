@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Hashtable;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import vsue.communication.VSObjectConnection;
 import vsue.faults.VSBuggyObjectConnection;
+import vsue.faults.VSLURMap;
 import vsue.faults.VSRPCsemantics;
 
 /**
@@ -351,7 +353,7 @@ public class VSServer implements Runnable {
   /**
    * Datenbank für die Anfragen
    */
-  private static final Hashtable<String, VSRequestDBEntry> requestLog = new Hashtable<>();
+  private static final Map<String, VSRequestDBEntry> requestLog = Collections.synchronizedMap(new VSLURMap<String, VSRequestDBEntry>(42));
 
   /**
    * Der Socket des Servers
