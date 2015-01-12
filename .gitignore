@@ -11,3 +11,8 @@ bin/**
 
 # trash #
 desktop.ini
+.idea/.name
+
+*.xml
+
+*.iml
